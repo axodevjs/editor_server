@@ -2,6 +2,7 @@ import mongoose, {mongo} from "mongoose";
 
 const Invite = new mongoose.Schema({
     role: {type: String},
+    email: {type: String},
     documentId: {type: mongoose.Schema.Types.ObjectId},
 })
 

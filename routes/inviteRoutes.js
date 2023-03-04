@@ -5,6 +5,6 @@ import authMiddleware from "../middleware/auth.middleware.js";
 const inviteRoutes = new Router()
 
 inviteRoutes.post('/', authMiddleware, InviteController.create)
-inviteRoutes.post('/use/:id', authMiddleware, InviteController.use)
+inviteRoutes.post('/use/:id', InviteController.use)
 
 export default inviteRoutes

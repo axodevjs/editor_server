@@ -6,28 +6,7 @@ import corsMiddleware from './middleware/cors.middleware.js';
 import documentRoutes from "./routes/documentRoutes.js";
 import {Server} from "socket.io";
 import inviteRoutes from "./routes/inviteRoutes.js";
-// import nodemailer from 'nodemailer'
-//
-// // create reusable transporter object using the default SMTP transport
-// const transporter = nodemailer.createTransport({
-//     host: "smtp.mail.ru",
-//     port: 465,
-//     secure: true,
-//     auth: {
-//         user: "pomodor151@mail.ru",
-//         pass: "Udc95XijqccMtQaxWSFJ",
-//     },
-// });
-//
-// transporter.sendMail({
-//     from: '"Your Name" <youremail@gmail.com>', // sender address
-//     to: "samoilovalex2006@gmail.com", // list of receivers
-//     subject: "Medium @edigleyssonsilva ✔", // Subject line
-//     text: "There is a new article. It's about sending emails, check it out!", // plain text body
-//     html: "<b>There is a new article. It's about sending emails, check it out!</b>", // html body
-// }).then(info => {
-//     console.log({info});
-// }).catch(console.error);
+
 
 dotenv.config();
 
