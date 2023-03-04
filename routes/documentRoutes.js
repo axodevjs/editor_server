@@ -9,10 +9,8 @@ documentRoutes.get('/:id', authMiddleware, DocumentController.getOne)
 documentRoutes.get('/all/:userId', authMiddleware, DocumentController.getAllByUserId)
 documentRoutes.put('/:id', authMiddleware, DocumentController.update)
 documentRoutes.delete('/:id', authMiddleware, DocumentController.delete)
-//
-// documentRoutes.post('/documents/:id/inviteUser', authMiddleware, DocumentController.inviteUser)
-//
-// documentRoutes.post('/documents/:id/commit', authMiddleware, DocumentController.createCommit)
-// documentRoutes.put('/documents/:id/commit', authMiddleware, DocumentController.updateCommit)
+
+
+documentRoutes.post('/addUser/:id', authMiddleware, DocumentController.addUser)
 
 export default documentRoutes

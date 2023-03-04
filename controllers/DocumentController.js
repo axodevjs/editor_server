@@ -14,23 +14,9 @@ class DocumentController {
 
   async getOne(req, res) {
     try {
-      const document = await DocumentService.getOne(req.params.id);
+      const document = await DocumentService.getAllByUserId(req.params.userId);
 
-      // Проверка является ли пользователь владельцем документа
-      const token = req.headers.authorization.split(' ')[1]
-      if (!token) {
-        return res.status(401).json({message: 'Auth error'})
-      }
-
-      req.user = await jwt.verify(token, process.env.secretKey)
-
-      console.log(document?.users?.find(x => x?.userId.toString() === req?.user?.id.toString()))
-      if (!document?.users?.find(x => x?.userId.toString() === req?.user?.id.toString())) {
-        return res.status(401).json({message: 'Auth error'})
-      }
-
-
-      return res.json(document);
+      return document
     } catch (e) {
       res.status(500).json(e);
     }
@@ -62,6 +48,20 @@ class DocumentController {
     } catch (e) {
       res.status(500).json(e);
     }
+  }
+
+  async addUser(req, res) {
+    const {email, role} = req.body;
+
+    if (!email) {
+      return res.status(500).json({message: "Введите email"})
+    }
+    if (!role) {
+      return res.status(500).json({message: "Введите роль"})
+    }
+
+    const document = await DocumentService.addUser(req.params.id, email, role);
+    return res.json(document);
   }
 }
 

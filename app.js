@@ -5,8 +5,6 @@ import authRoutes from './routes/authRoutes.js';
 import corsMiddleware from './middleware/cors.middleware.js';
 import documentRoutes from "./routes/documentRoutes.js";
 import {Server} from "socket.io";
-import inviteRoutes from "./routes/inviteRoutes.js";
-
 
 dotenv.config();
 
@@ -19,7 +17,6 @@ app.use(corsMiddleware)
 app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/document', documentRoutes)
-app.use('/api/invite', inviteRoutes)
 
 async function startApp() {
     try {
