@@ -1,7 +1,6 @@
 import DocumentService from "../services/DocumentService.js";
 import jwt from "jsonwebtoken";
 
-
 class DocumentController {
   async create(req, res) {
     try {
@@ -14,9 +13,13 @@ class DocumentController {
 
   async getOne(req, res) {
     try {
-      const document = await DocumentService.getAllByUserId(req.params.userId);
+      const document = await DocumentService.getOne(req.params.id, req.user.id);
 
-      return document
+      if (!document) {
+        res.status(404);
+      }
+
+      return res.json(document);
     } catch (e) {
       res.status(500).json(e);
     }
@@ -51,13 +54,13 @@ class DocumentController {
   }
 
   async addUser(req, res) {
-    const {email, role} = req.body;
+    const { email, role } = req.body;
 
     if (!email) {
-      return res.status(500).json({message: "Введите email"})
+      return res.status(500).json({ message: "Введите email" });
     }
     if (!role) {
-      return res.status(500).json({message: "Введите роль"})
+      return res.status(500).json({ message: "Введите роль" });
     }
 
     const document = await DocumentService.addUser(req.params.id, email, role);
