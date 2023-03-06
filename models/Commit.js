@@ -1,16 +1,15 @@
 import mongoose, { Schema } from "mongoose";
 
 const Commit = new mongoose.Schema({
-  title: { type: String },
-  users: [
-    {
-      role: String,
-      userId: mongoose.Schema.Types.ObjectId,
-      username: String,
-      email: String,
-    },
-  ],
-  content: { type: String },
+  documentId: { type: mongoose.Schema.Types.ObjectId },
+  before: { type: String },
+  after: { type: String },
+  date: { type: Date },
+  status: { type: String },
+  username: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId },
+  votesAccept: { type: Array },
+  votesReject: { type: Array },
 });
 
-export default mongoose.model("Document", Commit);
+export default mongoose.model("Commit", Commit);

@@ -1,3 +1,6 @@
+import CommitService from "../services/CommitService.js";
+import DocumentService from "../services/DocumentService.js";
+
 let channels;
 channels = [];
 
@@ -62,12 +65,14 @@ export const initSockets = (io) => {
       }
 
       let userIndex = channel?.users?.findIndex((x) => x?.userId === user?.id);
-      channel.users[userIndex].editing = true;
+      if (channel?.users[userIndex]) {
+        channel.users[userIndex].editing = true;
+      }
 
       io.in(document?._id).emit("updateChannel", channel);
     });
 
-    socket.on("sendEdit", ({ document, user }) => {
+    socket.on("stopEdit", ({ document, user }) => {
       if (!document || !user) {
         return;
       }
@@ -81,9 +86,109 @@ export const initSockets = (io) => {
       }
 
       let userIndex = channel?.users?.findIndex((x) => x?.userId === user?.id);
-      channel.users[userIndex].editing = true;
+      if (channel?.users[userIndex]) {
+        channel.users[userIndex].editing = false;
+      }
 
       io.in(document?._id).emit("updateChannel", channel);
+    });
+
+    socket.on("sendEdit", ({ document, user, newContent }) => {
+      if (!document || !user) {
+        return;
+      }
+
+      let channel = channels.find(
+        (ch) => ch.documentId.toString() === document?._id.toString()
+      );
+
+      if (!channel) {
+        return;
+      }
+
+      CommitService.createCommit({
+        documentId: document?._id,
+        before: document?.content,
+        after: newContent,
+        date: new Date(),
+        status: channel?.users?.length === 1 ? "accepted" : "waiting",
+        username: user?.username,
+        userId: user?.id,
+        votesAccept: [],
+        votesReject: [],
+      }).then((commit) => {
+        console.log(commit);
+        io.in(document?._id).emit("commitCreate", commit);
+      });
+    });
+
+    socket.on("actionCommit", ({ document, user, commit, type }) => {
+      if (!document || !user) {
+        return;
+      }
+
+      let channel = channels.find(
+        (ch) => ch.documentId.toString() === document?._id.toString()
+      );
+
+      if (!channel) {
+        return;
+      }
+
+      CommitService.getOne(commit?._id).then((response) => {
+        let newCommit = response;
+
+        if (type === "accept") {
+          if (
+            !newCommit?.votesAccept?.find((x) => x?.userId === user?.id) &&
+            !newCommit?.votesReject?.find((x) => x?.userId === user?.id)
+          ) {
+            newCommit.votesAccept?.push({
+              userId: user?.id,
+              username: user?.username,
+            });
+          }
+        }
+        if (type === "reject") {
+          if (
+            !newCommit?.votesReject?.find((x) => x?.userId === user?.id) &&
+            !newCommit?.votesAccept?.find((x) => x?.userId === user?.id)
+          ) {
+            newCommit.votesReject?.push({
+              userId: user?.id,
+              username: user?.username,
+            });
+          }
+        }
+
+        let acceptCount = newCommit?.votesAccept?.length;
+        let rejectCount = newCommit?.votesReject?.length;
+        let newDocument = undefined;
+
+        if (acceptCount + rejectCount === document?.users?.length) {
+          if (acceptCount > rejectCount) {
+            newCommit.status = "accepted";
+
+            newDocument = document;
+            newDocument.content = newCommit?.after;
+            DocumentService?.update(document?._id, newDocument);
+          }
+          if (rejectCount > acceptCount) {
+            newCommit.status = "rejected";
+          }
+          if (rejectCount === acceptCount) {
+            newCommit.status = "rejected";
+          }
+        }
+
+        CommitService.update(commit?._id, newCommit).then((commit) => {
+          CommitService.getAllByDocumentId(document?._id).then((response) =>
+            io
+              .in(document?._id)
+              .emit("commitUpdate", { commits: response, newDocument })
+          );
+        });
+      });
     });
 
     socket.on("disconnect", () => {

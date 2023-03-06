@@ -6,6 +6,7 @@ import corsMiddleware from "./middleware/cors.middleware.js";
 import documentRoutes from "./routes/documentRoutes.js";
 import { Server } from "socket.io";
 import { initSockets } from "./sockets/index.js";
+import commitRoutes from "./routes/commitRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(corsMiddleware);
 app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/document", documentRoutes);
+app.use("/api/commit", commitRoutes);
 
 async function startApp() {
   try {
