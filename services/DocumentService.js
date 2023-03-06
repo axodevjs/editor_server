@@ -24,15 +24,11 @@ class DocumentService {
   async getOne(id, userId) {
     const document = await Document.findOne({ _id: id });
 
-    console.log(id);
-    console.log(document.users);
-    console.log(userId?.toString());
     if (
       !document?.users?.find(
         (x) => x?.userId?.toString() === userId?.toString()
       )
     ) {
-      console.log("null");
       return null;
     }
 
@@ -41,8 +37,6 @@ class DocumentService {
 
   async getAllByUserId(id) {
     const user = await User.findById(id);
-    console.log(user);
-    console.log(user.documents);
     return user.documents;
   }
 
