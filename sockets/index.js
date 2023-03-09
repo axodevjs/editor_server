@@ -217,6 +217,27 @@ export const initSockets = (io) => {
       });
     });
 
+    socket.on("startAccept", ({ document, user }) => {
+      if (!document || !user) {
+        return;
+      }
+
+      let channel = channels.find(
+        (ch) => ch.documentId.toString() === document?._id.toString()
+      );
+
+      if (!channel) {
+        return;
+      }
+
+      let userIndex = channel?.users?.findIndex((x) => x?.userId === user?.id);
+      if (channel?.users[userIndex]) {
+        channel.users[userIndex].accepted = true;
+      }
+
+      io.in(document?._id).emit("updateChannel", channel);
+    });
+
     socket.on("disconnect", () => {
       let channel = channels.find((x) =>
         x.users.find((a) => a.socketId === socket.id)
