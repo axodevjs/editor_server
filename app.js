@@ -7,6 +7,7 @@ import documentRoutes from "./routes/documentRoutes.js";
 import { Server } from "socket.io";
 import { initSockets } from "./sockets/index.js";
 import commitRoutes from "./routes/commitRoutes.js";
+import commentRoutes from "./routes/commentRoutes.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/document", documentRoutes);
 app.use("/api/commit", commitRoutes);
+app.use("/api/comment", commentRoutes);
 
 async function startApp() {
   try {

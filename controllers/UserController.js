@@ -5,21 +5,16 @@ import jwt from "jsonwebtoken";
 class UserController {
   async registration(req, res) {
     try {
-      const { username, password, email } = req.body;
-      const candidate = await User.findOne({ username });
-      const candidateEmail = await User.findOne({ email });
+      const { email, password } = req.body;
+      const candidate = await User.findOne({ email });
+
       if (candidate) {
-        return res.status(400).json({
-          message: `Пользователь с логином ${username} уже существует`,
-        });
-      }
-      if (candidateEmail) {
         return res
           .status(400)
           .json({ message: `Пользователь с email ${email} уже существует` });
       }
       const hashPassword = await bcrypt.hash(password, 8);
-      const user = new User({ username, password: hashPassword, email });
+      const user = new User({ email, password: hashPassword });
       await user.save();
 
       return res.json({ message: "Пользователь успешно создан" });
@@ -31,21 +26,21 @@ class UserController {
 
   async login(req, res) {
     try {
-      const { username, password } = req.body;
-      if (!username || !password) {
-        return res.status(400).json("Неправильный логин или пароль");
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json("Неправильный email или пароль");
       }
-      const user = await User.findOne({ username });
+      const user = await User.findOne({ email });
       if (!user) {
         return res
           .status(404)
-          .json({ message: "Неправильный логин или пароль" });
+          .json({ message: "Неправильный email или пароль" });
       }
       const isPassValid = bcrypt.compareSync(password, user.password);
       if (!isPassValid) {
         return res
           .status(404)
-          .json({ message: "Неправильный логин или пароль" });
+          .json({ message: "Неправильный email или пароль" });
       }
       const token = jwt.sign({ id: user.id }, process.env.secretKey, {
         expiresIn: "1h",
@@ -54,7 +49,6 @@ class UserController {
         token,
         user: {
           id: user.id,
-          username: user.username,
           email: user.email,
         },
       });
@@ -74,7 +68,6 @@ class UserController {
         token,
         user: {
           id: user.id,
-          username: user.username,
           email: user.email,
         },
       });

@@ -6,7 +6,7 @@ const Commit = new mongoose.Schema({
   after: { type: String },
   date: { type: Date },
   status: { type: String },
-  username: { type: String },
+  email: { type: String },
   userId: { type: mongoose.Schema.Types.ObjectId },
   votesAccept: { type: Array },
   votesReject: { type: Array },

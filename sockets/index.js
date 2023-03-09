@@ -1,12 +1,13 @@
 import CommitService from "../services/CommitService.js";
 import DocumentService from "../services/DocumentService.js";
+import CommentService from "../services/CommentService.js";
 
 let channels;
 channels = [];
 
 // {
 //   documentId: "documentId",
-//       users: [{ userId: "someid", username: "John", editing: false }],
+//       users: [{ userId: "someid", email: "John@gmail.com", editing: false }],
 // },
 
 export const initSockets = (io) => {
@@ -27,7 +28,7 @@ export const initSockets = (io) => {
             users: [
               {
                 userId: user?.id,
-                username: user?.username,
+                email: user?.email,
                 editing: false,
                 socketId: socket.id,
               },
@@ -37,7 +38,7 @@ export const initSockets = (io) => {
           if (!channel?.users?.find((x) => x?.userId === user?.id)) {
             channel?.users?.push({
               userId: user?.id,
-              username: user?.username,
+              email: user?.email,
               editing: false,
               socketId: socket.id,
             });
@@ -112,9 +113,9 @@ export const initSockets = (io) => {
         after: newContent,
         date: new Date(),
         status: channel?.users?.length === 1 ? "accepted" : "waiting",
-        username: user?.username,
+        email: user?.email,
         userId: user?.id,
-        votesAccept: [],
+        votesAccept: [{ userId: user?.id, email: user?.email }],
         votesReject: [],
       }).then((commit) => {
         console.log(commit);
@@ -145,7 +146,7 @@ export const initSockets = (io) => {
           ) {
             newCommit.votesAccept?.push({
               userId: user?.id,
-              username: user?.username,
+              email: user?.email,
             });
           }
         }
@@ -156,7 +157,7 @@ export const initSockets = (io) => {
           ) {
             newCommit.votesReject?.push({
               userId: user?.id,
-              username: user?.username,
+              email: user?.email,
             });
           }
         }
@@ -165,7 +166,12 @@ export const initSockets = (io) => {
         let rejectCount = newCommit?.votesReject?.length;
         let newDocument = undefined;
 
-        if (acceptCount + rejectCount === document?.users?.length) {
+        if (
+          acceptCount + rejectCount ===
+          document?.users?.filter(
+            (x) => x?.role === "Создатель" || x?.role === "Редактор"
+          )?.length
+        ) {
           if (acceptCount > rejectCount) {
             newCommit.status = "accepted";
 
@@ -175,9 +181,11 @@ export const initSockets = (io) => {
           }
           if (rejectCount > acceptCount) {
             newCommit.status = "rejected";
+            newDocument = "end";
           }
           if (rejectCount === acceptCount) {
             newCommit.status = "rejected";
+            newDocument = "end";
           }
         }
 
@@ -185,9 +193,27 @@ export const initSockets = (io) => {
           CommitService.getAllByDocumentId(document?._id).then((response) =>
             io
               .in(document?._id)
-              .emit("commitUpdate", { commits: response, newDocument })
+              .emit("commitUpdate", { commits: response, newDocument, commit })
           );
         });
+      });
+    });
+
+    socket.on("sendComment", ({ document, user, comment }) => {
+      if (!document || !user || !comment) {
+        return;
+      }
+
+      let channel = channels.find(
+        (ch) => ch.documentId.toString() === document?._id.toString()
+      );
+
+      if (!channel) {
+        return;
+      }
+
+      CommentService.createComment(comment).then((response) => {
+        io.in(document?._id).emit("acceptComment", response);
       });
     });
 

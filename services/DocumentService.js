@@ -68,7 +68,6 @@ class DocumentService {
         document.users.push({
           role,
           userId: candidate?._id,
-          username: candidate?.username,
           email: candidate?.email,
         });
 
@@ -105,15 +104,11 @@ class DocumentService {
 
     // Создание аккаунта
     else {
-      const username = email.split("@")[0];
       const password = Math.random().toString(36).substr(2, 8);
       const hashPassword = await bcrypt.hash(password, 8);
 
-      // TODO: отправить на почту сообщение с ссылкой для входа
-
       const user = await User.create({
         email,
-        username,
         password: hashPassword,
         online: false,
         documents: [
@@ -134,7 +129,6 @@ class DocumentService {
         document?.users?.push({
           role,
           userId: user?._id,
-          username,
           email,
         });
 
@@ -145,7 +139,7 @@ class DocumentService {
         email,
         "Вы добавлены в документ",
         `Вас пригласили в документ ${document?.title}. Для открытия войдите в аккаунт
-                Логин: ${username}
+                Email: ${email}
                 Пароль: ${password}
                 Ссылка: ${process.env.CLIENT_URL}
 `
